@@ -269,7 +269,9 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                 }
             }
             call.method.equals("getList") -> {
-                bluetoothService.cleanHandlerBtBle()
+                if(this::bluetoothService.isInitialized){
+                    bluetoothService.cleanHandlerBtBle()
+                }
                 getUSBDeviceList(result)
             }
             call.method.equals("connectPrinter") -> {

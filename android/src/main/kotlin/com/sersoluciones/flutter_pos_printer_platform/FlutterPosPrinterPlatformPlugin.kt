@@ -200,7 +200,10 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         adapter = USBPrinterService.getInstance(usbHandler)
         adapter.init(context)
 
+        // Initialize bluetoothService early, to avoid UninitializedPropertyAccessException
         bluetoothService = BluetoothService.getInstance(bluetoothHandler)
+        bluetoothService.setHandler(bluetoothHandler)
+        bluetoothService.setActivity(currentActivity) // In case the activity is already available
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {

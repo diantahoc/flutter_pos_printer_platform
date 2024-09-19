@@ -14,6 +14,8 @@ import com.sersoluciones.flutter_pos_printer_platform.usb.USBPrinterService
 import java.nio.charset.Charset
 import java.util.*
 
+import com.sersoluciones.flutter_pos_printer_platform.BfLogger
+
 class USBPrinterAdapter private constructor() {
 
     private var mContext: Context? = null

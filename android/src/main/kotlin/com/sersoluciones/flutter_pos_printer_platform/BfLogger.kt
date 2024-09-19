@@ -1,41 +1,58 @@
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.embedding.engine.FlutterEngine
+package com.sersoluciones.flutter_pos_printer_platform
 
-class BfLogger(private val flutterEngine: FlutterEngine?) {
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+
+class BfLogger private constructor(private val flutterPluginBinding: FlutterPlugin.FlutterPluginBinding?) {
+
     private val CHANNEL = "flutter_bugfender"
 
     private val methodChannel: MethodChannel? by lazy {
-        flutterEngine?.dartExecutor?.binaryMessenger?.let {
+        flutterPluginBinding?.binaryMessenger?.let {
             MethodChannel(it, CHANNEL)
         }
     }
 
-    // Function to verify MethodChannel existence and send log
+    // Static companion object for global access
+    companion object {
+        private var instance: BfLogger? = null
+
+        // Initialize the BugfenderLogger instance
+        fun initialize(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+            if (instance == null) {
+                instance = BfLogger(flutterPluginBinding)
+            }
+        }
+
+        // Get the instance of BugfenderLogger
+        fun getInstance(): BfLogger? {
+            return instance
+        }
+    }
+
+    // Send log to Bugfender
     fun sendLog(logMessage: String) {
         methodChannel?.let {
             it.invokeMethod("log", logMessage)
         } ?: run {
-            // Handle the absence of the MethodChannel
             println("MethodChannel for Bugfender is not available")
         }
     }
 
-    // Function to send info log
+    // Send info log to Bugfender
     fun sendInfo(infoMessage: String) {
         methodChannel?.let {
             it.invokeMethod("info", infoMessage)
         } ?: run {
-            // Handle the absence of the MethodChannel
             println("MethodChannel for Bugfender is not available")
         }
     }
 
-    // Function to send warning log
+    // Send warning log to Bugfender
     fun sendWarning(warningMessage: String) {
         methodChannel?.let {
             it.invokeMethod("warn", warningMessage)
         } ?: run {
-            // Handle the absence of the MethodChannel
             println("MethodChannel for Bugfender is not available")
         }
     }

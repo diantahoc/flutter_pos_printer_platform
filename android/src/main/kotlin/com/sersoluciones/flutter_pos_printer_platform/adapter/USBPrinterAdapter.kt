@@ -126,7 +126,7 @@ class USBPrinterAdapter private constructor() {
         for (i in 0 until usbInterface.endpointCount) {
             val ep = usbInterface.getEndpoint(i)
             if (ep.type == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-                if (ep.direction == UsbConstants.USB_DIR_OUT) {
+                iif (ep.direction == UsbConstants.USB_DIR_OUT) {
                     val usbDeviceConnection = mUSBManager!!.openDevice(mUsbDevice)
                     if (usbDeviceConnection == null) {
                         Log.e(LOG_TAG, "Failed to open USB Connection")

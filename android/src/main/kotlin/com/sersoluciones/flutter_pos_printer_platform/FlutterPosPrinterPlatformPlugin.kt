@@ -367,10 +367,12 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
     }
 
     private fun printBytes(bytes: ArrayList<Int>?, result: Result) {
-        if (bytes == null) return
-        adapter.setHandler(usbHandler)
-        adapter.printBytes(bytes)
-        result.success(true)
+        if (bytes == null){
+            result.success(false)
+        } else{
+            adapter.setHandler(usbHandler)
+            result.success(adapter.printBytes(bytes))
+        }
     }
 
     private fun checkPermissions(): Boolean {

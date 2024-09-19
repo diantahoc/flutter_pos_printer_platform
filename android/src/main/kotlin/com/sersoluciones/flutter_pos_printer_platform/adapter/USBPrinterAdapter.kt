@@ -198,7 +198,7 @@ class USBPrinterAdapter private constructor() {
     fun printBytes(bytes: ArrayList<Int>): Boolean {
         val logger = BfLogger()
         Log.v(LOG_TAG, "Printing bytes")
-        logger.sendLog('Printing bytes)
+        logger.sendLog('Printing bytes')
         val isConnected = openConnection()
         if (isConnected) {
             val chunkSize = mEndPoint!!.maxPacketSize

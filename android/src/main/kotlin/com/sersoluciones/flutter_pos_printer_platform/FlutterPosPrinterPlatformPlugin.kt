@@ -172,8 +172,6 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, methodChannel)
         channel.setMethodCallHandler(this)
 
-        BfLogger.initialize(flutterPluginBinding)
-
         messageChannel = EventChannel(flutterPluginBinding.binaryMessenger, eventChannelBT)
         messageChannel?.setStreamHandler(object : EventChannel.StreamHandler {
 

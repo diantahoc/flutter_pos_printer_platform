@@ -14,8 +14,6 @@ import com.sersoluciones.flutter_pos_printer_platform.usb.USBPrinterService
 import java.nio.charset.Charset
 import java.util.*
 
-import com.sersoluciones.flutter_pos_printer_platform.BfLogger
-
 class USBPrinterAdapter private constructor() {
 
     private var mContext: Context? = null
@@ -198,15 +196,12 @@ class USBPrinterAdapter private constructor() {
     }
 
     fun printBytes(bytes: ArrayList<Int>): Boolean {
-        val logger = BfLogger.getInstance()
         Log.v(LOG_TAG, "Printing bytes")
-        logger?.sendLog("Printing bytes")
         val isConnected = openConnection()
         if (isConnected) {
             val chunkSize = mEndPoint!!.maxPacketSize
             Log.v(LOG_TAG, "Max Packet Size: $chunkSize")
             Log.v(LOG_TAG, "Connected to device")
-            logger?.sendLog("Max packet size: $chunkSize, connected")
             Thread {
                 synchronized(printLock) {
                     val vectorData: Vector<Byte> = Vector()
@@ -245,14 +240,12 @@ class USBPrinterAdapter private constructor() {
                             )
                         }
                         Log.i(LOG_TAG, "Return code: $b")
-                        logger?.sendInfo("Return code: $b")
                     }
                 }
             }.start()
             return true
         } else {
             Log.v(LOG_TAG, "Failed to connected to device")
-            logger?.sendWarning("Failed to connect to device")
             return false
         }
     }

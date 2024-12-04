@@ -200,7 +200,10 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         adapter = USBPrinterService.getInstance(usbHandler)
         adapter.init(context)
 
+        // Initialize bluetoothService early, to avoid UninitializedPropertyAccessException
         bluetoothService = BluetoothService.getInstance(bluetoothHandler)
+        bluetoothService.setHandler(bluetoothHandler)
+        bluetoothService.setActivity(currentActivity) // In case the activity is already available
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -269,7 +272,9 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                 }
             }
             call.method.equals("getList") -> {
-                bluetoothService.cleanHandlerBtBle()
+                if(this::bluetoothService.isInitialized){
+                    bluetoothService.cleanHandlerBtBle()
+                }
                 getUSBDeviceList(result)
             }
             call.method.equals("connectPrinter") -> {
@@ -365,10 +370,12 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
     }
 
     private fun printBytes(bytes: ArrayList<Int>?, result: Result) {
-        if (bytes == null) return
-        adapter.setHandler(usbHandler)
-        adapter.printBytes(bytes)
-        result.success(true)
+        if (bytes == null){
+            result.success(false)
+        } else{
+            adapter.setHandler(usbHandler)
+            result.success(adapter.printBytes(bytes))
+        }
     }
 
     private fun checkPermissions(): Boolean {

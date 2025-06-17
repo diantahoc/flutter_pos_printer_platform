@@ -44,7 +44,7 @@ class USBPrinterService private constructor(private var mHandler: Handler?) {
                         state = STATE_USB_CONNECTED
                         mHandler?.obtainMessage(STATE_USB_CONNECTED)?.sendToTarget()
                     } else {
-                        Toast.makeText(context, mContext?.getString(R.string.user_refuse_perm) + ": ${usbDevice!!.deviceName}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, mContext?.getString(R.string.user_refuse_perm) + ": ${usbDevice?.deviceName ?: "Unknown Device"}", Toast.LENGTH_LONG).show()
                         state = STATE_USB_NONE
                         mHandler?.obtainMessage(STATE_USB_NONE)?.sendToTarget()
                     }
@@ -70,10 +70,16 @@ class USBPrinterService private constructor(private var mHandler: Handler?) {
     fun init(reactContext: Context?) {
         mContext = reactContext
         mUSBManager = mContext!!.getSystemService(Context.USB_SERVICE) as UsbManager
+
+        val GetEXTRA_PERMISSION_GRANTEDIntent = Intent(ACTION_USB_PERMISSION).apply {
+            putExtra(UsbManager.EXTRA_PERMISSION_GRANTED, true)
+            setPackage(mContext?.packageName)
+        }
+         
         mPermissionIndent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            PendingIntent.getBroadcast(mContext, 0, Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getBroadcast(mContext, 0, GetEXTRA_PERMISSION_GRANTEDIntent, PendingIntent.FLAG_MUTABLE)
         } else {
-            PendingIntent.getBroadcast(mContext, 0, Intent(ACTION_USB_PERMISSION), 0)
+            PendingIntent.getBroadcast(mContext, 0, GetEXTRA_PERMISSION_GRANTEDIntent, 0)
         }
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)

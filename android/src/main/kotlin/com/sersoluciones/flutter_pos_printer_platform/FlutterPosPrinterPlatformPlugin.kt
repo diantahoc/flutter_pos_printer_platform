@@ -177,8 +177,16 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         messageChannel = null
         messageUSBChannel = null
 
-        bluetoothService.setHandler(null)
-        adapter.setHandler(null)
+        // Check if bluetoothService is initialized before cleanup
+        // This prevents crash when BackgroundService stops before onAttachedToActivity is called
+        if (::bluetoothService.isInitialized) {
+            bluetoothService.setHandler(null)
+        }
+        
+        // Check if adapter is initialized before cleanup
+        if (::adapter.isInitialized) {
+            adapter.setHandler(null)
+        }
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -227,7 +235,10 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
     override fun onDetachedFromActivityForConfigChanges() {
         Log.d(TAG, "onDetachedFromActivityForConfigChanges")
         currentActivity = null
-        bluetoothService.setActivity(null)
+        // Check if bluetoothService is initialized before cleanup
+        if (::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(null)
+        }
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -235,13 +246,19 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         currentActivity = binding.activity
         binding.addRequestPermissionsResultListener(this)
         binding.addActivityResultListener(this)
-        bluetoothService.setActivity(currentActivity)
+        // Check if bluetoothService is initialized before setting activity
+        if (::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(currentActivity)
+        }
     }
 
     override fun onDetachedFromActivity() {
         Log.d(TAG, "onDetachedFromActivity")
         currentActivity = null
-        bluetoothService.setActivity(null)
+        // Check if bluetoothService is initialized before cleanup
+        if (::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(null)
+        }
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {

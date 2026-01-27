@@ -69,19 +69,39 @@ class USBPrinterService private constructor(private var mHandler: Handler?) {
         }
     }
 
-    fun init(reactContext: Context?) {
-        mContext = reactContext
-        mUSBManager = mContext!!.getSystemService(Context.USB_SERVICE) as UsbManager
-        mPermissionIndent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            PendingIntent.getBroadcast(mContext, 0, Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
-        } else {
-            PendingIntent.getBroadcast(mContext, 0, Intent(ACTION_USB_PERMISSION), 0)
-        }
-        val filter = IntentFilter(ACTION_USB_PERMISSION)
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
-        mContext!!.registerReceiver(mUsbDeviceReceiver, filter)
-        Log.v(LOG_TAG, "ESC/POS Printer initialized")
+fun init(reactContext: Context?) {
+    mContext = reactContext
+    mUSBManager = mContext!!.getSystemService(Context.USB_SERVICE) as UsbManager
+
+    // 1. Create an EXPLICIT intent by setting the package name. 
+    // Android 14+ often blocks implicit intents for security.
+    val intent = Intent(ACTION_USB_PERMISSION)
+    intent.setPackage(mContext?.packageName)
+
+    // 2. Use FLAG_MUTABLE. 
+    // USB permission requests require mutability to allow the system to 
+    // attach the UsbDevice and permission results to the intent.
+    mPermissionIndent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_MUTABLE)
+    } else {
+        PendingIntent.getBroadcast(mContext, 0, intent, 0)
     }
+
+    val filter = IntentFilter(ACTION_USB_PERMISSION)
+    filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+
+    // 3. Register the receiver with RECEIVER_EXPORTED.
+    // Receivers handling system-driven events like USB permissions must be 
+    // exported on Android 13+ to receive the response from the OS.
+    if (android.os.Build.VERSION.SDK_INT >= 33) {
+        mContext!!.registerReceiver(mUsbDeviceReceiver, filter, Context.RECEIVER_EXPORTED)
+    } else {
+        mContext!!.registerReceiver(mUsbDeviceReceiver, filter)
+    }
+    
+    Log.v(LOG_TAG, "ESC/POS Printer initialized with Android 14+ fixes")
+}
+
 
     fun closeConnectionIfExists() {
         if (mUsbDeviceConnection != null) {

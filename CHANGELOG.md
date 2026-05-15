@@ -1,3 +1,10 @@
+## 1.2.5
+
+* Upgrade Android build system to Gradle 8.14 and AGP 8.11.1
+* Migrate Android build files from Groovy to Kotlin DSL (build.gradle.kts)
+* Update Kotlin version to 2.2.20 and target Java 17
+* Migrate example app Android build files to Kotlin DSL with new Flutter Gradle integration
+
 ## 1.2.4
 
 * Relax rxdart version to allow library usage in FlutterFlow app builder

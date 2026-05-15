@@ -40,27 +40,42 @@ class USBPrinterAdapter private constructor() {
 
 
     private val mUsbDeviceReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            if ((ACTION_USB_PERMISSION == action)) {
+        override fun onReceive(context: Context, intent: Intent?) {
+            if (intent == null) return
+    
+            val action = intent.action ?: return
+    
+            if (ACTION_USB_PERMISSION == action) {
                 synchronized(this) {
                     val usbDevice: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                    if (usbDevice == null) {
+                        Log.e(LOG_TAG, "USB_PERMISSION received but EXTRA_DEVICE was null")
+                        return
+                    }
+    
+                    val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
+                    if (granted) {
                         Log.i(
                             LOG_TAG,
-                            "Success get permission for device " + usbDevice!!.deviceId + ", vendor_id: " + usbDevice.vendorId + " product_id: " + usbDevice.productId
+                            "Success get permission for device ${usbDevice.deviceId}, " +
+                            "vendor_id: ${usbDevice.vendorId}, product_id: ${usbDevice.productId}"
                         )
                         mUsbDevice = usbDevice
                     } else {
                         Toast.makeText(
-                            context, mContext?.getString(R.string.user_refuse_perm) + ": ${usbDevice!!.deviceName}",
+                            context,
+                            "${mContext?.getString(R.string.user_refuse_perm)}: ${usbDevice.deviceName ?: "Unknown"}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                 }
-            } else if ((UsbManager.ACTION_USB_DEVICE_DETACHED == action)) {
+            } else if (UsbManager.ACTION_USB_DEVICE_DETACHED == action) {
                 if (mUsbDevice != null) {
-                    Toast.makeText(context, mContext?.getString(R.string.device_off), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        mContext?.getString(R.string.device_off) ?: "Device disconnected",
+                        Toast.LENGTH_LONG
+                    ).show()
                     closeConnectionIfExists()
                 }
             }

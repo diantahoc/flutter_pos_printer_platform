@@ -1,22 +1,21 @@
 name: flutter_pos_printer_platform_image_3
 description: A flutter plugin that prints esc commands to printers in different platforms such as android, ios, windows and different interfaces Bluetooth and BLE, TCP and USB
-version: 1.2.4
+version: 1.2.5
 homepage: https://github.com/diantahoc/flutter_pos_printer_platform
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: '>=3.4.1 <4.0.0'
   flutter: ">=1.20.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # flutter_star_prnt: ^2.3.6
-  enum_to_string: ^2.0.1
-  image_v3: ^3.3.0
-  network_info_plus: ^4.0.2
+  enum_to_string: ^2.2.1
+  image: ^4.8.0
+  network_info_plus: ^8.1.0
   ping_discover_network_forked: ^0.0.1
-  rxdart: ^0.27.7
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:

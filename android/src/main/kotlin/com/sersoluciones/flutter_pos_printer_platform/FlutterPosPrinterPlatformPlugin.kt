@@ -214,10 +214,21 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
             }
         })
 
-        adapter = USBPrinterService.getInstance(usbHandler)
-        adapter.init(context)
-
+        // Bluetooth first, and USB init isolated. Every Bluetooth entry point
+        // reads the `bluetoothService` lateinit, so anything that threw during
+        // USB setup used to leave it unassigned and take Bluetooth printing
+        // down with it — the next print failed with
+        // UninitializedPropertyAccessException rather than a USB error.
         bluetoothService = BluetoothService.getInstance(bluetoothHandler)
+
+        adapter = USBPrinterService.getInstance(usbHandler)
+        try {
+            adapter.init(context)
+        } catch (e: Exception) {
+            // A device with no USB host support, or a receiver registration
+            // the OS rejects, must not disable the rest of the plugin.
+            Log.e(TAG, "USB printer init failed; USB printing unavailable", e)
+        }
 
         binding.addRequestPermissionsResultListener(this)
         binding.addActivityResultListener(this)

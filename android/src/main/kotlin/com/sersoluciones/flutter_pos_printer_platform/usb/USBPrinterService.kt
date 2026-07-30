@@ -77,7 +77,21 @@ class USBPrinterService private constructor(private var mHandler: Handler?) {
         }
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
-        mContext!!.registerReceiver(mUsbDeviceReceiver, filter)
+        // ACTION_USB_PERMISSION is our own action, so this filter is not
+        // exclusively for protected system broadcasts. From Android 14
+        // (targetSdk 34) registering such a receiver without declaring
+        // exported-ness throws SecurityException. The flag exists from API 33.
+        // NOT_EXPORTED is correct here: the permission broadcast comes back to
+        // us via our own PendingIntent, and protected system broadcasts such as
+        // ACTION_USB_DEVICE_DETACHED are still delivered to a non-exported
+        // receiver.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            mContext!!.registerReceiver(
+                mUsbDeviceReceiver, filter, Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            mContext!!.registerReceiver(mUsbDeviceReceiver, filter)
+        }
         Log.v(LOG_TAG, "ESC/POS Printer initialized")
     }
 

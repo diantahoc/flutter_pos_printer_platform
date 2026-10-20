@@ -90,7 +90,13 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
             super.handleMessage(msg)
             when (msg.what) {
                 BluetoothConstants.MESSAGE_STATE_CHANGE -> {
-                    when (bluetoothStatus) {
+                    // The state travels in arg1. Reading the live state here lost
+                    // the FAILED step: connectionFailed() posts FAILED and moves to
+                    // NONE at once, so by the time this ran the state was NONE, the
+                    // FAILED branch never fired and the connect() Result was never
+                    // answered — the Dart future hung until the caller's timeout.
+                    val reported = if (msg.arg1 >= 0) msg.arg1 else bluetoothStatus
+                    when (reported) {
                         BluetoothConstants.STATE_CONNECTED -> {
                             Log.w(TAG, " -------------------------- connection BT STATE_CONNECTED ")
                             if (msg.obj != null)
@@ -177,8 +183,15 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         messageChannel = null
         messageUSBChannel = null
 
-        bluetoothService.setHandler(null)
-        adapter.setHandler(null)
+        if (this::bluetoothService.isInitialized) {
+            bluetoothService.setHandler(null)
+        }
+
+        if (this::adapter.isInitialized) {
+            adapter.setHandler(null)
+        }
+
+
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -227,7 +240,10 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
     override fun onDetachedFromActivityForConfigChanges() {
         Log.d(TAG, "onDetachedFromActivityForConfigChanges")
         currentActivity = null
-        bluetoothService.setActivity(null)
+        if (this::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(null)
+        }
+
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -235,13 +251,19 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         currentActivity = binding.activity
         binding.addRequestPermissionsResultListener(this)
         binding.addActivityResultListener(this)
-        bluetoothService.setActivity(currentActivity)
+        if (this::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(currentActivity)
+        }
+
     }
 
     override fun onDetachedFromActivity() {
         Log.d(TAG, "onDetachedFromActivity")
         currentActivity = null
-        bluetoothService.setActivity(null)
+        if (this::bluetoothService.isInitialized) {
+            bluetoothService.setActivity(null)
+        }
+
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {

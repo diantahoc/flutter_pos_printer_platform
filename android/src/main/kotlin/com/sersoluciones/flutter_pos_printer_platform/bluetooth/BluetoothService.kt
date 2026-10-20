@@ -204,10 +204,10 @@ class BluetoothService(private var bluetoothHandler: Handler?) {
         }
     }
 
+    /** true only when the bytes reached the link; a dead socket answers false. */
     fun sendDataByte(bytes: ByteArray?): Boolean {
         if (bluetoothConnection?.state == BluetoothConstants.STATE_CONNECTED) {
-            bluetoothConnection?.write(bytes!!)
-            return true
+            return bluetoothConnection?.write(bytes!!) == true
         }
         return false
     }

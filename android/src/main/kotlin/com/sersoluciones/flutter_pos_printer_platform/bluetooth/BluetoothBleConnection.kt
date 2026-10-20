@@ -101,25 +101,16 @@ class BluetoothBleConnection(
         }
     }
 
-    override fun write(out: ByteArray?) {
-        mCharacteristic?.let { characteristic ->
-//            val writeType = when {
-//                characteristic.isWritable() -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-//                characteristic.isWritableWithoutResponse() -> {
-//                    BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-//                }
-//                else -> error("Characteristic ${characteristic.uuid} cannot be written to")
-//            }
-
-            bluetoothGatt?.let { gatt ->
-                characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                characteristic.value = out
-                gatt.writeCharacteristic(mCharacteristic)
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(BluetoothConstants.MESSAGE_WRITE, -1, -1, out)
-                    .sendToTarget()
-            } ?: error("Not connected to a BLE device!")
-        }
+    override fun write(out: ByteArray?): Boolean {
+        val characteristic = mCharacteristic ?: return false
+        val gatt = bluetoothGatt ?: error("Not connected to a BLE device!")
+        characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+        characteristic.value = out
+        val queued = gatt.writeCharacteristic(characteristic)
+        // Share the sent message back to the UI Activity
+        mHandler.obtainMessage(BluetoothConstants.MESSAGE_WRITE, -1, -1, out)
+            .sendToTarget()
+        return queued
     }
 
     /***

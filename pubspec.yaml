@@ -13,10 +13,11 @@ dependencies:
 
   # flutter_star_prnt: ^2.3.6
   enum_to_string: ^2.0.1
+  esc_pos_utils_plus: ^2.0.4
   image_v3: ^3.3.0
   ping_discover_network_forked: ^0.0.1
   rxdart: ^0.27.7
-  network_info_plus: ^5.0.1
+  network_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
